@@ -40,7 +40,6 @@ build/smug-macos-amd64: $(GOFILES)
 build/smug-linux-arm64: $(GOFILES)
 	GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=$(VER)" -mod=vendor -o build/smug-linux-arm64  main.go
 
-
 build-docker: build/smug-linux-amd64
 	docker build -t nod/smug:`cat VERSION` .
 	docker build -t nod/smug:latest .
@@ -48,6 +47,4 @@ build-docker: build/smug-linux-amd64
 tagproj:
 	git tag -a v`cat VERSION`
 	git push --tags
-
-
 
