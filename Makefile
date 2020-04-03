@@ -17,6 +17,10 @@ build/smug: setuplocal main.go
 	$(info setting VER to $(VER))
 	go build -ldflags "-X main.version=$(VER)" -mod=vendor -o build/smug main.go
 
+fmt:
+	go fmt main.go
+	go fmt ./smug
+
 run: build/smug
 	./bin/run_local
 

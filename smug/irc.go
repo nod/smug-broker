@@ -38,12 +38,12 @@ func (ib *IrcBroker) Setup(args ...string) {
 	}
 	ib.log = NewLogger(ib.Name())
 
-    if !strings.Contains(ib.server, ":") {
-        // port not included, let's naively append the default :6667
-        ib.server = ib.server + ":6667"
-    }
+	if !strings.Contains(ib.server, ":") {
+		// port not included, let's naively append the default :6667
+		ib.server = ib.server + ":6667"
+	}
 
-    fmt.Println("server", ib.server)
+	fmt.Println("server", ib.server)
 
 	ib.conn = libirc.IRC(ib.nick, ib.botname)
 	// ib.conn.VerboseCallbackHandler = true
@@ -109,9 +109,9 @@ func (ib *IrcBroker) HandleEvent(ev *Event, dis Dispatcher) {
 }
 
 func (ib *IrcBroker) Activate(dis Dispatcher) {
-    if ib.conn == nil {
-        panic("ERR: ib.conn is nil. this should never happen")
-    }
+	if ib.conn == nil {
+		panic("ERR: ib.conn is nil. this should never happen")
+	}
 	// XXX this should ensure some sort of singleton to ensure Run should only
 	// ever be called once...
 	ib.conn.AddCallback("PRIVMSG", func(e *libirc.Event) {

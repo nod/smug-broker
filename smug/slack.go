@@ -246,9 +246,9 @@ func (sb *SlackBroker) Setup(args ...string) {
 	sb.SetupInternals()
 	sb.token = args[0]
 	sb.channel = args[1]
-    if strings.HasPrefix(sb.channel, "#") {
-        sb.log.Warnf("slack channels should not begin with #")
-    }
+	if strings.HasPrefix(sb.channel, "#") {
+		sb.log.Warnf("slack channels should not begin with #")
+	}
 	sc := libsl.New(
 		sb.token,
 		libsl.OptionDebug(true),
@@ -257,7 +257,7 @@ func (sb *SlackBroker) Setup(args ...string) {
 	sb.api = sc
 	sb.rtm = sb.api.NewRTM()
 	authtest, err := sb.api.AuthTest() // gets our identity from slack api
-    myuid := authtest.UserID
+	myuid := authtest.UserID
 	if err != nil {
 		sb.log.Warnf("ERR occurred %+v", err)
 	}

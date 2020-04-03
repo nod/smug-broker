@@ -106,9 +106,9 @@ func MakePatternBroker(cfg *smug.BrokerConfig) smug.Broker {
 		// now build our pattern
 		newp, err := smug.NewExtendedPattern(
 			p.Name, p.RegEx, p.Url, p.Headers, p.Vars, p.Method, p.Help)
-        if err != nil {
-            panic(fmt.Sprintf("error creating PatternBroker %s", err))
-        }
+		if err != nil {
+			panic(fmt.Sprintf("error creating PatternBroker %s", err))
+		}
 		pb.AddPattern(newp)
 	}
 	return pb
