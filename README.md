@@ -26,7 +26,8 @@ the docker command.
 export SMUG_IRC_SERVER="irc.example.com:6667"
 export SMUG_IRC_CHANNEL="#my_chan"
 export SMUG_SLACK_TOKEN="xoxo-blah"
-docker run -e SMUG_IRC_SERVER,SMUG_IRC_CHANNEL,SMUG_SLACK_TOKEN threatsimple/smug:latest
+docker run -e SMUG_IRC_SERVER,SMUG_IRC_CHANNEL,SMUG_SLACK_TOKEN \
+  nod/smug-broker:latest
 ```
 
 Note - slack has complicated getting the proper token.

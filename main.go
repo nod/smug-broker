@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"time"
 
-	smug "github.com/threatsimple/smug-broker/smug"
+	smug "github.com/nod/smug-broker/smug"
 )
 
 var version string
