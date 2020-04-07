@@ -19,8 +19,9 @@ import (
 	"sync"
 	"time"
 
-	libsl "github.com/nlopes/slack"
+	libsl "github.com/slack-go/slack"
 )
+
 
 /* ************************** *
  * fake the slacklib logger
@@ -154,16 +155,28 @@ type SlackBroker struct {
 	re_usernick     *regexp.Regexp
 	re_atusers      *regexp.Regexp
 	re_embeddedurls *regexp.Regexp
+	msgsMux  sync.RWMutex
+	msgsSent int64
+	msgsRcvd int64
 }
 
 func (sb *SlackBroker) Name() string {
 	return fmt.Sprintf("slack-%s", sb.channel)
 }
 
+func (sb *SlackBroker) Heartbeat() bool {
+    sb.msgsMux.Lock()
+    mr,ms := sb.msgsRcvd, sb.msgsSent
+    sb.msgsRcvd, sb.msgsSent = 0,0
+    sb.msgsMux.Unlock()
+    sb.log.logMetrics(mr,ms)
+    return true
+}
+
 // allows us to setup internal members without hitting the api
 // let's us do certain tests that don't require api
 func (sb *SlackBroker) SetupInternals() {
-	sb.log = NewLogger("slack")
+	sb.log = NewLogger("broker", "slack")
 	sb.usercache = &SlackUserCache{}
 	sb.usercache.Setup()
 	sb.re_uids = regexp.MustCompile(`<@(U[\w|]+)>`) // get sub ids in msgs
@@ -251,8 +264,8 @@ func (sb *SlackBroker) Setup(args ...string) {
 	}
 	sc := libsl.New(
 		sb.token,
-		libsl.OptionDebug(true),
-		libsl.OptionLog(&SlackLogger{sb.log}),
+		libsl.OptionDebug(false),
+		// libsl.OptionLog(&SlackLogger{sb.log}),
 	)
 	sb.api = sc
 	sb.rtm = sb.api.NewRTM()
@@ -288,6 +301,9 @@ func (sb *SlackBroker) HandleEvent(ev *Event, dis Dispatcher) {
 		// if not intended for us, eject here
 		return
 	}
+    sb.msgsMux.Lock()
+    sb.msgsRcvd++
+    sb.msgsMux.Unlock()
 	txt := sb.ConvertUsersToRefs(ev.Text, false)
 	var dest string
 	if len(ev.ReplyTarget) == 0 {
@@ -371,7 +387,6 @@ func (sb *SlackBroker) SimplifyParse(s string) string {
 }
 
 func (sb *SlackBroker) ParseToEvent(e *libsl.MessageEvent) *Event {
-	sb.log.Debugf("%+v", e)
 	nick := sb.usercache.UserNick(sb, e.User, false)
 	outmsgs := []string{e.Text}
 	if len(e.Files) > 0 {
@@ -433,6 +448,9 @@ func (sb *SlackBroker) Activate(dis Dispatcher) {
 					ev.ReplyBroker = sb
 					ev.ReplyTarget = e.Channel
 				}
+                sb.msgsMux.Lock()
+                sb.msgsSent++
+                sb.msgsMux.Unlock()
 				dis.Broadcast(ev)
 			}
 		case *libsl.PresenceChangeEvent:

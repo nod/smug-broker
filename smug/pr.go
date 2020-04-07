@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -185,21 +186,24 @@ func (p *Pattern) Submit(
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf(
+		fmt.Fprintf(
+		    os.Stderr,
 			"ERR readthis post failed to %s body=%s %+v\n",
-			p.url, reqbody, err)
+			p.url, reqbody, err,
+		)
 		return
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	if err != nil || !strings.HasPrefix(resp.Status, "200") {
-		fmt.Printf("ERR resp  %s %+v %s\n", err, resp.Status, string(body))
+		fmt.Fprintf(os.Stderr,
+		    "ERR resp  %s %+v %s\n", err, resp.Status, string(body),
+		)
 		return
 	}
 	// now attempt to see if anything returned
 	if len(string(body)) > 0 {
 		var dat JsonResponse
-		fmt.Printf("JSON BODY IS\n%s", string(body))
 		if err = json.Unmarshal(body, &dat); err != nil {
 			// just abadon hope here
 			fmt.Printf("ERR WITH JSON UNMARSHAL got body of %s", string(body))
@@ -234,12 +238,24 @@ type PatternRoutingBroker struct {
 	pmux     sync.RWMutex
 	feedback chan *Event
 	patterns []MetaPattern
+    msgsActn int64
+    msgsRcvd int64
 }
 
 func (prb *PatternRoutingBroker) AddPattern(newp MetaPattern) {
 	prb.pmux.Lock()
 	prb.patterns = append(prb.patterns, newp)
 	prb.pmux.Unlock()
+}
+
+func (prb *PatternRoutingBroker) Heartbeat() bool {
+    prb.pmux.Lock()
+    mr,ma := prb.msgsRcvd, prb.msgsActn
+    prb.msgsRcvd = 0
+    prb.msgsActn = 0
+    prb.pmux.Unlock()
+    prb.log.logMetrics(mr, ma)
+    return true
 }
 
 func (prb *PatternRoutingBroker) Name() string {
@@ -259,16 +275,20 @@ func (prb *PatternRoutingBroker) HelpText() string {
 
 // args [regex,apiurl,method,headers]
 func (prb *PatternRoutingBroker) Setup(args ...string) {
-	prb.log = NewLogger(prb.Name())
+	prb.log = NewLogger("broker", prb.Name())
 	prb.feedback = make(chan *Event, 100)
 	prb.AddPattern(&HelperPattern{pbroker: prb})
 }
 
 func (prb *PatternRoutingBroker) HandleEvent(ev *Event, dis Dispatcher) {
-	prb.pmux.RLock()
-	defer prb.pmux.RUnlock()
+	prb.pmux.Lock()
+	prb.msgsRcvd++
+	prb.pmux.Unlock()
 	for _, ptn := range prb.patterns {
 		if ptn.Handle(ev, prb.feedback) {
+	        prb.pmux.Lock()
+		    prb.msgsActn++
+	        prb.pmux.Unlock()
 			break
 		}
 	}

@@ -38,8 +38,8 @@ type Config struct {
 	Brokers       map[string]*BrokerConfig `yaml:"brokers"`
 }
 
+// populates from any environment variables
 func envOverrides(cfg *Config) {
-	// populates from any environment variables
 	for key, bcfg := range cfg.Brokers {
 		b := reflect.TypeOf(*bcfg)
 		for i := 0; i < b.NumField(); i++ {
@@ -60,13 +60,19 @@ func envOverrides(cfg *Config) {
 	}
 }
 
-func LoadConfig(configFile string) *Config {
+func LoadConfig(configPath string) *Config {
+	var configStr []byte
+	var err error
 	cfg := Config{}
-	data, err := ioutil.ReadFile(configFile)
+    if strings.HasPrefix(configPath, "http") {
+        configStr, err = FetchUrl(configPath)
+    } else {
+	    configStr, err = ioutil.ReadFile(configPath)
+    }
 	if err != nil {
 		panic(err)
 	}
-	err = yaml.Unmarshal(data, &cfg)
+	err = yaml.Unmarshal(configStr, &cfg)
 	if err != nil {
 		panic(err)
 	}

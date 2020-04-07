@@ -7,6 +7,7 @@ package smug
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -66,15 +67,27 @@ type LocalCmdBroker struct {
 	prefixCmds []Command
 	botNick    string
 	botAvatar  string
+	mux sync.RWMutex
+	msgsSent int64
+	msgsRcvd int64
 }
 
 func (lcb *LocalCmdBroker) Name() string {
 	return "localcmd"
 }
 
+func (lcb *LocalCmdBroker) Heartbeat() bool {
+    lcb.mux.Lock()
+    ms,mr := lcb.msgsSent, lcb.msgsRcvd
+    lcb.msgsSent, lcb.msgsRcvd = 0,0
+    lcb.mux.Unlock()
+    lcb.log.logMetrics(mr,ms)
+    return true
+}
+
 // args [botnick, botavatar, version string]
 func (lcb *LocalCmdBroker) Setup(args ...string) {
-	lcb.log = NewLogger("locmd")
+	lcb.log = NewLogger("broker", "locmd")
 	if len(args) != 3 {
 		lcb.log.Fatal("command broker thrown with too few args")
 	}
@@ -105,6 +118,9 @@ func (lcb *LocalCmdBroker) HandleEvent(ev *Event, dis Dispatcher) {
 		for _, cmd := range lcb.prefixCmds {
 			if cmd.match(ev) {
 				cmd.exec(ev, lcb.NewEvent(ev), dis)
+				lcb.mux.Lock()
+				lcb.msgsRcvd++
+				lcb.mux.Unlock()
 				return
 			}
 		}

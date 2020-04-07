@@ -1,4 +1,4 @@
-// shared types across smug, makes it easy to ref and share
+// shared types across smug
 
 package smug
 
@@ -17,12 +17,18 @@ func (c ContentType) String() string {
 
 type Broker interface {
 	Name() string
+	// called for every event
 	HandleEvent(*Event, Dispatcher)
-	Setup(...string) // at the end of this func, the broker should be able to
-	// Handle(event) as needed, whether that is a queue until
-	// Activate() is called by dispatcher.AddBroker
-	Activate(Dispatcher) // this will setup a runloop if needed for the broker
-	Deactivate()         // must not return anything, will be called during destruction
+    // after Setup(), the broker should be able to Handle(event) as needed.
+    // may require a queue until Activate() is called by dispatcher.AddBroker
+	Setup(...string)
+	// this will setup a runloop if needed for the broker
+	Activate(Dispatcher)
+	// called during destruction
+	Deactivate()
+	// if true not returned, broker assumed to be dead.
+	// should cause broker to output a logline with metrics
+	Heartbeat() bool
 }
 
 type Dispatcher interface {
@@ -30,6 +36,7 @@ type Dispatcher interface {
 	AddBroker(Broker)
 	RemoveBroker(Broker) error
 	NumBrokers() int
+	Heartbeat()
 }
 
 type EventBlock struct {

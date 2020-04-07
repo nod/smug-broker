@@ -12,11 +12,16 @@ type Logger struct {
 	log.Entry
 }
 
+func (lg *Logger) logMetrics(rcvd int64, sent int64) {
+    lg.WithFields(log.Fields{
+        "rcvd": rcvd,
+        "sent": sent,
+    }).Info("heartbeat")
+}
+
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
-	// log.SetFormatter(&log.JSONFormatter{})
-
-	log.SetFormatter(&log.TextFormatter{})
+	log.SetFormatter(&log.JSONFormatter{})
 
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
@@ -34,6 +39,7 @@ func SetupLogging(loglevel string) {
 	}
 }
 
-func NewLogger(context string) *Logger {
-	return &Logger{*log.WithFields(log.Fields{"ctx": context})}
+func NewLogger(key string, context string) *Logger {
+	return &Logger{*log.WithFields(log.Fields{key: context})}
 }
+

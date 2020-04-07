@@ -1,5 +1,11 @@
 package smug
 
+import (
+	"io/ioutil"
+	"net/http"
+	"strconv"
+)
+
 func ChunkSplit(body string, limit int) []string {
 	result := []string{}
 	var charSlice []rune
@@ -20,3 +26,19 @@ func ChunkSplit(body string, limit int) []string {
 	}
 	return result
 }
+
+func FetchUrl(url string) ([]byte,error) {
+    // Get the data
+    resp, err := http.Get(url)
+    if err != nil {
+        return nil,err
+    }
+    defer resp.Body.Close()
+	text, err := ioutil.ReadAll(resp.Body)
+    return text,err
+}
+
+func fmtInt64(i int64) string {
+    return strconv.FormatInt(i, 10)
+}
+

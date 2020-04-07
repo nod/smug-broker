@@ -15,7 +15,7 @@ type CentralDispatch struct {
 }
 
 func NewCentralDispatch() *CentralDispatch {
-	return &CentralDispatch{log: NewLogger("dispatch")}
+    return &CentralDispatch{log: NewLogger("ctx", "dispatch")}
 }
 
 func (cd *CentralDispatch) Broadcast(ev *Event) {
@@ -25,6 +25,17 @@ func (cd *CentralDispatch) Broadcast(ev *Event) {
 		if ev.Origin != b {
 			go b.HandleEvent(ev, cd)
 		}
+	}
+	cd.mux.RUnlock()
+}
+
+func (cd *CentralDispatch) Heartbeat() {
+	// publish to all
+	cd.mux.RLock()
+	for _, b := range cd.brokers {
+        if b.Heartbeat() != true {
+            cd.log.Warnf("failed heartbeat: %v", b)
+        }
 	}
 	cd.mux.RUnlock()
 }

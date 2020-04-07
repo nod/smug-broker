@@ -35,7 +35,10 @@ test: setuplocal
 
 binaries: build/smug-linux-amd64 build/smug-macos-amd64 build/smug-linux-arm64
 
-build/smug-linux-amd64: $(GOFILES)
+vendor:
+	go mod vendor
+
+build/smug-linux-amd64: vendor $(GOFILES)
 	GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=$(VER)" -mod=vendor -o build/smug-linux-amd64 main.go
 
 build/smug-macos-amd64: $(GOFILES)

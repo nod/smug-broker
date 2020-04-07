@@ -9,6 +9,7 @@ type FakeBroker struct{}
 func (fb *FakeBroker) Name() string                       { return "faker" }
 func (fb *FakeBroker) HandleEvent(e *Event, d Dispatcher) {}
 func (fb *FakeBroker) Setup(...string)                    {}
+func (fb *FakeBroker) Heartbeat() bool   {return true}
 func (fb *FakeBroker) Activate(dis Dispatcher)            {}
 func (fb *FakeBroker) Deactivate()                        {}
 

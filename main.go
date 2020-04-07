@@ -153,7 +153,7 @@ func main() {
 	// setup logging first
 	smug.SetupLogging(opts.loglevel)
 
-	log := smug.NewLogger("smug")
+	log := smug.NewLogger("smug", version)
 	maxprocs := runtime.GOMAXPROCS(-1)
 	log.Infof("starting smug ver:%s gomaxprocs:%d", version, maxprocs)
 
@@ -173,8 +173,15 @@ func main() {
 	}
 
 	// just loop here for now so others can run like happy little trees
+    timepassed := 0 * time.Millisecond
+    sleeptime := 200 * time.Millisecond
 	for true {
-		time.Sleep(400 * time.Millisecond)
+		time.Sleep(sleeptime)
+	    timepassed += sleeptime
+	    if timepassed >= (1000 * 30 * time.Millisecond) {
+	        timepassed = 0 * time.Millisecond
+		    dispatcher.Heartbeat()
+        }
 	}
 
 }

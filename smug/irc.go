@@ -6,7 +6,10 @@ package smug
 import (
 	"crypto/tls"
 	"fmt"
+	"log"
+	"os"
 	"strings"
+	"sync"
 	"time"
 
 	libirc "github.com/thoj/go-ircevent"
@@ -20,11 +23,24 @@ type IrcBroker struct {
 	botname string
 	prefix  string
 	server  string
+	mux sync.RWMutex
+	msgsRcvd int64
+	msgsSent int64
 }
 
 func (ib *IrcBroker) Name() string {
 	return fmt.Sprintf("irc-%s-%s-as-%s", ib.server, ib.channel, ib.nick)
 }
+
+func (ib *IrcBroker) Heartbeat() bool {
+    ib.mux.Lock()
+    ms,mr := ib.msgsSent, ib.msgsRcvd
+    ib.msgsSent, ib.msgsRcvd = 0, 0
+    ib.mux.Unlock()
+    ib.log.logMetrics(mr, ms)
+    return true
+}
+
 
 // args [server, channel, nick, botname]
 func (ib *IrcBroker) Setup(args ...string) {
@@ -36,16 +52,15 @@ func (ib *IrcBroker) Setup(args ...string) {
 	} else {
 		ib.botname = "smug"
 	}
-	ib.log = NewLogger(ib.Name())
+	ib.log = NewLogger("broker", ib.Name())
 
 	if !strings.Contains(ib.server, ":") {
 		// port not included, let's naively append the default :6667
 		ib.server = ib.server + ":6667"
 	}
 
-	fmt.Println("server", ib.server)
-
 	ib.conn = libirc.IRC(ib.nick, ib.botname)
+	ib.conn.Log = log.New(os.Stderr, "", log.LstdFlags)
 	// ib.conn.VerboseCallbackHandler = true
 	ib.conn.UseTLS = true // XXX should be a param
 	if ib.conn.UseTLS {
@@ -100,6 +115,10 @@ func (ib *IrcBroker) HandleEvent(ev *Event, dis Dispatcher) {
 	} else {
 		prefix = fmt.Sprintf("|%s| ", ev.Actor)
 	}
+	// incr our counters
+	ib.mux.Lock()
+	ib.msgsRcvd += 1
+	ib.mux.Unlock()
 	if ev.ReplyBroker == ib {
 		// private message for a user
 		go ib.MsgTarget(ev.ReplyTarget, ev.Text, prefix)
@@ -131,6 +150,9 @@ func (ib *IrcBroker) Activate(dis Dispatcher) {
 			ev.ReplyTarget = e.Nick
 			ev.ReplyBroker = ib
 		}
+		ib.mux.Lock()
+		ib.msgsSent++
+		ib.mux.Unlock()
 		dis.Broadcast(ev)
 	})
 	ib.conn.AddCallback("CTCP_ACTION", func(e *libirc.Event) {
