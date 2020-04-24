@@ -178,7 +178,7 @@ func main() {
 	for true {
 		time.Sleep(sleeptime)
 	    timepassed += sleeptime
-	    if timepassed >= (1000 * 30 * time.Millisecond) {
+	    if timepassed >= (1000 * 2 * 60 * time.Millisecond) {
 	        timepassed = 0 * time.Millisecond
 		    dispatcher.Heartbeat()
         }
