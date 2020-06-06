@@ -19,8 +19,8 @@ type Broker interface {
 	Name() string
 	// called for every event
 	HandleEvent(*Event, Dispatcher)
-    // after Setup(), the broker should be able to Handle(event) as needed.
-    // may require a queue until Activate() is called by dispatcher.AddBroker
+	// after Setup(), the broker should be able to Handle(event) as needed.
+	// may require a queue until Activate() is called by dispatcher.AddBroker
 	Setup(...string)
 	// this will setup a runloop if needed for the broker
 	Activate(Dispatcher)

@@ -187,7 +187,7 @@ func (p *Pattern) Submit(
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Fprintf(
-		    os.Stderr,
+			os.Stderr,
 			"ERR readthis post failed to %s body=%s %+v\n",
 			p.url, reqbody, err,
 		)
@@ -197,7 +197,7 @@ func (p *Pattern) Submit(
 	body, _ := ioutil.ReadAll(resp.Body)
 	if err != nil || !strings.HasPrefix(resp.Status, "200") {
 		fmt.Fprintf(os.Stderr,
-		    "ERR resp  %s %+v %s\n", err, resp.Status, string(body),
+			"ERR resp  %s %+v %s\n", err, resp.Status, string(body),
 		)
 		return
 	}
@@ -238,8 +238,8 @@ type PatternRoutingBroker struct {
 	pmux     sync.RWMutex
 	feedback chan *Event
 	patterns []MetaPattern
-    msgsActn int64
-    msgsRcvd int64
+	msgsActn int64
+	msgsRcvd int64
 }
 
 func (prb *PatternRoutingBroker) AddPattern(newp MetaPattern) {
@@ -249,13 +249,13 @@ func (prb *PatternRoutingBroker) AddPattern(newp MetaPattern) {
 }
 
 func (prb *PatternRoutingBroker) Heartbeat() bool {
-    prb.pmux.Lock()
-    mr,ma := prb.msgsRcvd, prb.msgsActn
-    prb.msgsRcvd = 0
-    prb.msgsActn = 0
-    prb.pmux.Unlock()
-    prb.log.logMetrics(mr, ma)
-    return true
+	prb.pmux.Lock()
+	mr, ma := prb.msgsRcvd, prb.msgsActn
+	prb.msgsRcvd = 0
+	prb.msgsActn = 0
+	prb.pmux.Unlock()
+	prb.log.logMetrics(mr, ma)
+	return true
 }
 
 func (prb *PatternRoutingBroker) Name() string {
@@ -286,9 +286,9 @@ func (prb *PatternRoutingBroker) HandleEvent(ev *Event, dis Dispatcher) {
 	prb.pmux.Unlock()
 	for _, ptn := range prb.patterns {
 		if ptn.Handle(ev, prb.feedback) {
-	        prb.pmux.Lock()
-		    prb.msgsActn++
-	        prb.pmux.Unlock()
+			prb.pmux.Lock()
+			prb.msgsActn++
+			prb.pmux.Unlock()
 			break
 		}
 	}

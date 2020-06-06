@@ -17,7 +17,7 @@ func (td *TestDispatch) Broadcast(ev *Event) {
 func (td *TestDispatch) AddBroker(Broker)          {}
 func (td *TestDispatch) RemoveBroker(Broker) error { return fmt.Errorf("wat?") }
 func (td *TestDispatch) NumBrokers() int           { return 0 }
-func (td *TestDispatch) Heartbeat() {  }
+func (td *TestDispatch) Heartbeat()                {}
 
 func TestLocalVersionCommand(t *testing.T) {
 	myver := "99.99.99"

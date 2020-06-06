@@ -13,10 +13,10 @@ type Logger struct {
 }
 
 func (lg *Logger) logMetrics(rcvd int64, sent int64) {
-    lg.WithFields(log.Fields{
-        "rcvd": rcvd,
-        "sent": sent,
-    }).Info("heartbeat")
+	lg.WithFields(log.Fields{
+		"rcvd": rcvd,
+		"sent": sent,
+	}).Info("heartbeat")
 }
 
 func init() {
@@ -42,4 +42,3 @@ func SetupLogging(loglevel string) {
 func NewLogger(key string, context string) *Logger {
 	return &Logger{*log.WithFields(log.Fields{key: context})}
 }
-

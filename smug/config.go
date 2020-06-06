@@ -64,11 +64,11 @@ func LoadConfig(configPath string) *Config {
 	var configStr []byte
 	var err error
 	cfg := Config{}
-    if strings.HasPrefix(configPath, "http") {
-        configStr, err = FetchUrl(configPath)
-    } else {
-	    configStr, err = ioutil.ReadFile(configPath)
-    }
+	if strings.HasPrefix(configPath, "http") {
+		configStr, err = FetchUrl(configPath)
+	} else {
+		configStr, err = ioutil.ReadFile(configPath)
+	}
 	if err != nil {
 		panic(err)
 	}

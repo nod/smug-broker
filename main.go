@@ -173,15 +173,15 @@ func main() {
 	}
 
 	// just loop here for now so others can run like happy little trees
-    timepassed := 0 * time.Millisecond
-    sleeptime := 200 * time.Millisecond
+	timepassed := 0 * time.Millisecond
+	sleeptime := 200 * time.Millisecond
 	for true {
 		time.Sleep(sleeptime)
-	    timepassed += sleeptime
-	    if timepassed >= (1000 * 2 * 60 * time.Millisecond) {
-	        timepassed = 0 * time.Millisecond
-		    dispatcher.Heartbeat()
-        }
+		timepassed += sleeptime
+		if timepassed >= (1000 * 2 * 60 * time.Millisecond) {
+			timepassed = 0 * time.Millisecond
+			dispatcher.Heartbeat()
+		}
 	}
 
 }

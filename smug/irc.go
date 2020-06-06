@@ -16,14 +16,14 @@ import (
 )
 
 type IrcBroker struct {
-	log     *Logger
-	conn    *libirc.Connection
-	channel string
-	nick    string
-	botname string
-	prefix  string
-	server  string
-	mux sync.RWMutex
+	log      *Logger
+	conn     *libirc.Connection
+	channel  string
+	nick     string
+	botname  string
+	prefix   string
+	server   string
+	mux      sync.RWMutex
 	msgsRcvd int64
 	msgsSent int64
 }
@@ -33,14 +33,13 @@ func (ib *IrcBroker) Name() string {
 }
 
 func (ib *IrcBroker) Heartbeat() bool {
-    ib.mux.Lock()
-    ms,mr := ib.msgsSent, ib.msgsRcvd
-    ib.msgsSent, ib.msgsRcvd = 0, 0
-    ib.mux.Unlock()
-    ib.log.logMetrics(mr, ms)
-    return true
+	ib.mux.Lock()
+	ms, mr := ib.msgsSent, ib.msgsRcvd
+	ib.msgsSent, ib.msgsRcvd = 0, 0
+	ib.mux.Unlock()
+	ib.log.logMetrics(mr, ms)
+	return true
 }
-
 
 // args [server, channel, nick, botname]
 func (ib *IrcBroker) Setup(args ...string) {

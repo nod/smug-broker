@@ -67,9 +67,9 @@ type LocalCmdBroker struct {
 	prefixCmds []Command
 	botNick    string
 	botAvatar  string
-	mux sync.RWMutex
-	msgsSent int64
-	msgsRcvd int64
+	mux        sync.RWMutex
+	msgsSent   int64
+	msgsRcvd   int64
 }
 
 func (lcb *LocalCmdBroker) Name() string {
@@ -77,12 +77,12 @@ func (lcb *LocalCmdBroker) Name() string {
 }
 
 func (lcb *LocalCmdBroker) Heartbeat() bool {
-    lcb.mux.Lock()
-    ms,mr := lcb.msgsSent, lcb.msgsRcvd
-    lcb.msgsSent, lcb.msgsRcvd = 0,0
-    lcb.mux.Unlock()
-    lcb.log.logMetrics(mr,ms)
-    return true
+	lcb.mux.Lock()
+	ms, mr := lcb.msgsSent, lcb.msgsRcvd
+	lcb.msgsSent, lcb.msgsRcvd = 0, 0
+	lcb.mux.Unlock()
+	lcb.log.logMetrics(mr, ms)
+	return true
 }
 
 // args [botnick, botavatar, version string]

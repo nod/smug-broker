@@ -22,7 +22,6 @@ import (
 	libsl "github.com/slack-go/slack"
 )
 
-
 /* ************************** *
  * fake the slacklib logger
  * ************************** */
@@ -155,9 +154,9 @@ type SlackBroker struct {
 	re_usernick     *regexp.Regexp
 	re_atusers      *regexp.Regexp
 	re_embeddedurls *regexp.Regexp
-	msgsMux  sync.RWMutex
-	msgsSent int64
-	msgsRcvd int64
+	msgsMux         sync.RWMutex
+	msgsSent        int64
+	msgsRcvd        int64
 }
 
 func (sb *SlackBroker) Name() string {
@@ -165,12 +164,12 @@ func (sb *SlackBroker) Name() string {
 }
 
 func (sb *SlackBroker) Heartbeat() bool {
-    sb.msgsMux.Lock()
-    mr,ms := sb.msgsRcvd, sb.msgsSent
-    sb.msgsRcvd, sb.msgsSent = 0,0
-    sb.msgsMux.Unlock()
-    sb.log.logMetrics(mr,ms)
-    return true
+	sb.msgsMux.Lock()
+	mr, ms := sb.msgsRcvd, sb.msgsSent
+	sb.msgsRcvd, sb.msgsSent = 0, 0
+	sb.msgsMux.Unlock()
+	sb.log.logMetrics(mr, ms)
+	return true
 }
 
 // allows us to setup internal members without hitting the api
@@ -301,9 +300,9 @@ func (sb *SlackBroker) HandleEvent(ev *Event, dis Dispatcher) {
 		// if not intended for us, eject here
 		return
 	}
-    sb.msgsMux.Lock()
-    sb.msgsRcvd++
-    sb.msgsMux.Unlock()
+	sb.msgsMux.Lock()
+	sb.msgsRcvd++
+	sb.msgsMux.Unlock()
 	txt := sb.ConvertUsersToRefs(ev.Text, false)
 	var dest string
 	if len(ev.ReplyTarget) == 0 {
@@ -448,9 +447,9 @@ func (sb *SlackBroker) Activate(dis Dispatcher) {
 					ev.ReplyBroker = sb
 					ev.ReplyTarget = e.Channel
 				}
-                sb.msgsMux.Lock()
-                sb.msgsSent++
-                sb.msgsMux.Unlock()
+				sb.msgsMux.Lock()
+				sb.msgsSent++
+				sb.msgsMux.Unlock()
 				dis.Broadcast(ev)
 			}
 		case *libsl.PresenceChangeEvent:
